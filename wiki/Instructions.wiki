@@ -3,7 +3,7 @@
 
 ===Introduction===
 
-Dukto is a simple utility to help people transfer files from one computer to another over a local area network. Very often happens that you want to transfer a file from two PC one next to the other, and you wonder "They are connected, they can talk, but how can I transfer this damn file???". Dukto is the answer.
+Dukto is a simple utility to help people transfer files from one computer to another over a local area network. Very often it happens that you want to transfer a file from a PC to the one next to it, and you wonder "They are connected, they can talk, but how can I transfer this damn file???". Dukto is the answer.
 
 ===What is it?===
 
@@ -11,7 +11,7 @@ Dukto is a standalone software, it doesn't need installation, it doesn't creates
 
 ===How it works?===
 
-Dukto usage is very simple, just start it on two PC connected over the LAN (or directly connected). On the buddy list will be showed the other peer. Now simply drag and drop your files and folders over the dukto window and they will be transferred to the other PC. That's all.
+Dukto usage is very simple, just start it on the two PC connected over the LAN (or directly connected). On the buddy list will be showed the other peer. Now simply drag and drop your files and folders over the dukto window and they'll be transferred to the other end. That's all.
 
 ===Where does dukto saves my received files?===
 
