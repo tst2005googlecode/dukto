@@ -15,7 +15,7 @@ Dukto usage is very simple, just start it on the two PC connected over the LAN (
 
 ===Where does dukto saves my received files?===
 
-Received files are saved in the dukto current directory, usually it's the same of the folder where there's the dukto executable file. You can change the output folder pressing the button on the left of the output path showed on the dukto window. If you want to make dukto start with your preferred output folder, just write it as the first command line option (like _dukto.exe c:\Dukto\_).
+Received files are saved in the dukto current directory, usually it's the same of the folder where there's the dukto executable file. You can change the output folder pressing the button on the right of the output path showed on the dukto window. If you want to make dukto start with your preferred output folder, just write it as the first command line option (like _dukto.exe c:\Dukto\_).
 
 ===What if there's a router on the LAN?===
 
