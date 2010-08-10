@@ -1,5 +1,5 @@
-/* DUKTO - A simple, fast and multi-platform file transfer tool for LAN users
- * Copyright (C) 2009 Emanuele Colombo
+/* Example application for EcWin7
+ * Copyright (C) 2010 Emanuele Colombo
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,14 +16,14 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#include "peer.h"
+#include <QtGui/QApplication>
+#include "mainwindow.h"
 
-Peer::Peer()
+int main(int argc, char *argv[])
 {
-}
+    QApplication a(argc, argv);
+    MainWindow w;
+    w.show();
 
-Peer::Peer(QHostAddress a, QString n)
-{
-    address = a;
-    name = n;
+    return a.exec();
 }
