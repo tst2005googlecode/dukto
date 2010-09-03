@@ -17,7 +17,8 @@ SOURCES += main.cpp \
     listwidgetpeeritem.cpp \
     duktoprotocol.cpp \
     dialogsendip.cpp \
-    buddywidget.cpp
+    buddywidget.cpp \
+    initthread.cpp
 
 HEADERS  += \
     peer.h \
@@ -26,7 +27,8 @@ HEADERS  += \
     listwidgetpeeritem.h \
     duktoprotocol.h \
     dialogsendip.h \
-    buddywidget.h
+    buddywidget.h \
+    initthread.h
 
 FORMS    += \
     mainwindow.ui \
@@ -55,4 +57,3 @@ symbian {
     moreFiles.pkg_postrules = "\"C:\\Qt\NokiaQtSDK\\Symbian\\SDK\\epoc32\\data\\z\\resource\\apps\\Dukto_icons.mbm\" -\"!:\\resource\\apps\\Dukto_icons.mbm\""
     DEPLOYMENT += moreFiles
 }
-
