@@ -7,6 +7,7 @@
 
 #include "duktoprotocol.h"
 #include "dialogsendip.h"
+#include "initthread.h"
 
 namespace Ui {
     class MainWindow;
@@ -34,6 +35,7 @@ public slots:
     void showCurrentIP();
     void changeFolder();
     void sendToIp();
+    void initFinished();
 
 protected:
     void changeEvent(QEvent *e);
@@ -42,10 +44,12 @@ private:
     Ui::MainWindow *ui;
     DuktoProtocol *mProtocol;
     QProgressDialog *mProgressDialog;
+    QProgressDialog *mConnectingDialog;
     DialogSendIp *mDialogSendIp;
     QAction *mCurrentIPAction;
     QAction *mChangeFolderAction;
     QAction *mSendToIPAction;
+    InitThread mInitThread;
 
 
 private slots:

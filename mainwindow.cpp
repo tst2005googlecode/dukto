@@ -41,12 +41,42 @@ MainWindow::MainWindow(QWidget *parent) :
     QDir::setCurrent("E:\\Dukto\\");
     ui->labelDest->setText("Folder: E:\\Dukto");
 
+    // Progress dialog per connessione rete
+    mConnectingDialog = new QProgressDialog("Connecting...", "", 0, 0);
+    mConnectingDialog->setCancelButton(NULL);
+    mConnectingDialog->setAutoClose(false);
+    mConnectingDialog->setMinimumDuration(0);
+    mConnectingDialog->setParent(this);
+    mConnectingDialog->setWindowModality(Qt::WindowModal);
+    mConnectingDialog->setValue(0);
+    mConnectingDialog->show();
+
+    // Start background thread for network connection
+    connect(&mInitThread, SIGNAL(finished()), this, SLOT(initFinished()));
+    mInitThread.start();
+
 }
 
 MainWindow::~MainWindow()
 {
-    delete mProgressDialog;
-    delete ui;
+    if (mConnectingDialog) delete mProgressDialog;
+    if (mConnectingDialog) delete mConnectingDialog;
+    if (mConnectingDialog) delete ui;
+}
+
+void MainWindow::initFinished()
+{
+    // Hide progress dialog
+    mConnectingDialog->hide();
+    delete mConnectingDialog;
+    mConnectingDialog = NULL;
+
+    // Check connection status
+    if (!mInitThread.isConnected())
+    {
+        QMessageBox::critical(0, "Dukto", "Can't open network connection.");
+        exit(-1);
+    }
 }
 
 void MainWindow::changeEvent(QEvent *e)
@@ -207,8 +237,6 @@ void MainWindow::showCurrentIP()
         else
             QMessageBox::information(0, "", "Your current IP addresses are " + addrs);
     }
-
-
 }
 
 void MainWindow::changeFolder()
