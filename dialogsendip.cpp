@@ -42,6 +42,6 @@ void DialogSendIp::on_buttonSend_clicked()
 {
     QStringList files = QFileDialog::getOpenFileNames(this, "Select file to send", "", "Any file (*.*)");
     if (files.count() == 0) return;
-    this->close();
+    // this->close();
     ((MainWindow*)this->parent())->startFileTransfer(files, ui->lineEdit->text());
 }
