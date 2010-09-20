@@ -4,6 +4,7 @@
 #include <QHash>
 #include <QNetworkInterface>
 #include <QAbstractSocket>
+#include <QNetworkConfigurationManager>
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
@@ -19,6 +20,7 @@ MainWindow::MainWindow(QWidget *parent) :
     // Creazione finestra
     ui->setupUi(this);
     mDialogSendIp = NULL;
+    mNetworkSession = NULL;
 
     // Creazione menu'
     mCurrentIPAction = new QAction("Current IP address", this);
@@ -35,48 +37,71 @@ MainWindow::MainWindow(QWidget *parent) :
     mProgressDialog = new QProgressDialog("", "", 0, 100);
     mProgressDialog->setWindowModality(Qt::WindowModal);
 
+    // Connecting dialog
+    mConnectingDialog = new QProgressDialog("\nConnecting...", "", 0, 0);
+    mConnectingDialog->setCancelButton(NULL);
+    mConnectingDialog->setAutoClose(false);
+    mConnectingDialog->setMinimumDuration(0);
+    mConnectingDialog->setWindowModality(Qt::WindowModal);
+
     // Percorso di default
     QDir d;
     d.mkpath("E:\\Dukto\\");
     QDir::setCurrent("E:\\Dukto\\");
     ui->labelDest->setText("Folder: E:\\Dukto");
 
-    // Progress dialog per connessione rete
-    mConnectingDialog = new QProgressDialog("Connecting...", "", 0, 0);
-    mConnectingDialog->setCancelButton(NULL);
-    mConnectingDialog->setAutoClose(false);
-    mConnectingDialog->setMinimumDuration(0);
-    mConnectingDialog->setParent(this);
-    mConnectingDialog->setWindowModality(Qt::WindowModal);
-    mConnectingDialog->setValue(0);
-    mConnectingDialog->show();
-
-    // Start background thread for network connection
-    connect(&mInitThread, SIGNAL(finished()), this, SLOT(initFinished()));
-    mInitThread.start();
-
 }
 
 MainWindow::~MainWindow()
 {
-    if (mConnectingDialog) delete mProgressDialog;
+    if (mNetworkSession) {
+        mNetworkSession->close();
+        delete mNetworkSession;
+    }
+    if (mProgressDialog) delete mProgressDialog;
     if (mConnectingDialog) delete mConnectingDialog;
-    if (mConnectingDialog) delete ui;
+    if (ui) delete ui;
 }
 
-void MainWindow::initFinished()
+void MainWindow::initConnection()
 {
-    // Hide progress dialog
-    mConnectingDialog->hide();
+    // Show connecting dialog
+    mConnectingDialog->show();
+
+    // Connection
+    QNetworkConfigurationManager manager;
+    const bool canStartIAP = (manager.capabilities() & QNetworkConfigurationManager::CanStartAndStopInterfaces);
+    QNetworkConfiguration cfg = manager.defaultConfiguration();
+    if (!cfg.isValid() || (!canStartIAP && cfg.state() != QNetworkConfiguration::Active)) return;
+    mNetworkSession = new QNetworkSession(cfg, this);
+    connect(mNetworkSession, SIGNAL(opened()), this, SLOT(connectOpened()));
+    connect(mNetworkSession, SIGNAL(error(QNetworkSession::SessionError)), this, SLOT(connectError(QNetworkSession::SessionError)));
+    mNetworkSession->open();
+}
+
+void MainWindow::connectOpened()
+{
+    // Sending broadcast hello
+    mProtocol->initSockets();
+    connect(mProtocol, SIGNAL(peerListChanged()), this, SLOT(refreshPeerList()));
+    connect(mProtocol, SIGNAL(sendFileComplete(QStringList*)), this, SLOT(sendFileComplete(QStringList*)));
+    connect(mProtocol, SIGNAL(sendFileError(int)), this, SLOT(sendFileError(int)));
+    connect(mProtocol, SIGNAL(receiveFileStart()), this, SLOT(receiveFileStart()));
+    connect(mProtocol, SIGNAL(receiveFileComplete(QStringList*)), this, SLOT(receiveFileComplete(QStringList*)));
+    connect(mProtocol, SIGNAL(receiveFileCancelled()), this, SLOT(receiveFileCancelled()));
+    connect(mProtocol, SIGNAL(transferStatusUpdate(int)), this, SLOT(transferStatusUpdate(int)), Qt::DirectConnection);
+    mProtocol->sayHello(QHostAddress::Broadcast);
+
+    // Hide connecting dialog
+    mConnectingDialog->close();
     delete mConnectingDialog;
     mConnectingDialog = NULL;
+}
 
-    // Check connection status
-    if (!mInitThread.isConnected())
-    {
-        QMessageBox::critical(0, "Dukto", "Can't open network connection.");
-        exit(-1);
-    }
+void MainWindow::connectError(QNetworkSession::SessionError error)
+{
+    QMessageBox::critical(0, "Dukto", "Error: " + mNetworkSession->errorString());
+    exit(-1);
 }
 
 void MainWindow::changeEvent(QEvent *e)
@@ -94,14 +119,6 @@ void MainWindow::changeEvent(QEvent *e)
 void MainWindow::setProtocolReference(DuktoProtocol *p)
 {
     mProtocol = p;
-    connect(p, SIGNAL(peerListChanged()), this, SLOT(refreshPeerList()));
-    connect(p, SIGNAL(sendFileComplete(QStringList*)), this, SLOT(sendFileComplete(QStringList*)));
-    connect(p, SIGNAL(sendFileError(int)), this, SLOT(sendFileError(int)));
-    connect(p, SIGNAL(receiveFileStart()), this, SLOT(receiveFileStart()));
-    connect(p, SIGNAL(receiveFileComplete(QStringList*)), this, SLOT(receiveFileComplete(QStringList*)));
-    connect(p, SIGNAL(receiveFileCancelled()), this, SLOT(receiveFileCancelled()));
-    connect(p, SIGNAL(transferStatusUpdate(int)), this, SLOT(transferStatusUpdate(int)), Qt::DirectConnection);
-    mProtocol->sayHello(QHostAddress::Broadcast);
 }
 
 // Aggiornamento lista dei client

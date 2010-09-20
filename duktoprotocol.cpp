@@ -30,6 +30,11 @@ DuktoProtocol::DuktoProtocol()
     : mSocket(NULL), mTcpServer(NULL), mCurrentSocket(NULL),
         mCurrentFile(NULL), mFilesToSend(NULL)
 {
+
+}
+
+void DuktoProtocol::initSockets() {
+
     mSocket = new QUdpSocket(this);
     mSocket->bind(UDP_PORT);
     connect(mSocket, SIGNAL(readyRead()), this, SLOT(newUdpData()));

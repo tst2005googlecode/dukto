@@ -37,6 +37,7 @@ class DuktoProtocol : public QObject
 public:
     DuktoProtocol();
     virtual ~DuktoProtocol();
+    void initSockets();
     void sayHello(QHostAddress dest);
     void sayGoodbye();
     inline QHash<QString, Peer>& getPeers() { return mPeers; }
