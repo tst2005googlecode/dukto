@@ -4,10 +4,12 @@
 #include <QMainWindow>
 #include <QListWidgetItem>
 #include <QProgressDialog>
+#include <QNetworkSession>
 
 #include "duktoprotocol.h"
 #include "dialogsendip.h"
-#include "initthread.h"
+
+QTM_USE_NAMESPACE
 
 namespace Ui {
     class MainWindow;
@@ -23,6 +25,7 @@ public:
     void setProtocolReference(DuktoProtocol *p);
     void startFileTransfer(QStringList files, QString dest);
     void startFileTransfer(QStringList files);
+    void initConnection();
 
 public slots:
     void refreshPeerList();
@@ -35,7 +38,9 @@ public slots:
     void showCurrentIP();
     void changeFolder();
     void sendToIp();
-    void initFinished();
+    // void initFinished();
+    void connectOpened();
+    void connectError(QNetworkSession::SessionError error);
 
 protected:
     void changeEvent(QEvent *e);
@@ -49,7 +54,7 @@ private:
     QAction *mCurrentIPAction;
     QAction *mChangeFolderAction;
     QAction *mSendToIPAction;
-    InitThread mInitThread;
+    QNetworkSession *mNetworkSession;
 
 
 private slots:
