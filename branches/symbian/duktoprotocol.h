@@ -42,6 +42,7 @@ public:
     void sayGoodbye();
     inline QHash<QString, Peer>& getPeers() { return mPeers; }
     void sendFile(QString ipDest, QStringList files);
+    void sendText(QString ipDest, QString text);
     inline bool isBusy() { return mIsSending || mIsReceiving; }
     
 public slots:
@@ -59,6 +60,7 @@ signals:
      void sendFileError(int code);
      void receiveFileStart();
      void receiveFileComplete(QStringList *files);
+     void receiveTextComplete(QString *text);
      void receiveFileCancelled();
      void transferStatusUpdate(int p);
 
@@ -67,6 +69,7 @@ private:
     void addRecursive(QStringList *e, QString path);
     qint64 computeTotalSize(QStringList *e);
     QByteArray nextElementHeader();
+    void sendToAllBroadcast(QByteArray *packet);
 
     void handleMessage(QByteArray &data, QHostAddress &sender);
     void updateStatus();
@@ -89,13 +92,19 @@ private:
     qint64 mSentData;               // Quantità di dati totale trasmessi
     qint64 mSentBuffer;             // Quantità di dati rimanenti nel buffer di trasmissione
     QString mBasePath;              // Percorso base per l'invio di file e cartelle
+    QString mTextToSend;            // Testo da inviare (in caso di invio testuale)
 
     // Receive members
     qint64 mElementsToReceiveCount;    // Numero di elementi da ricevere
     qint64 mTotalReceivedData;         // Quantità di dati ricevuti totale
     qint64 mElementReceivedData;       // Quantità di dati ricevuti per l'elemento corrente
     qint64 mElementSize;               // Dimensione dell'elemento corrente
+    QString mRootFolderName;           // Nome della cartella principale ricevuta
+    QString mRootFolderRenamed;        // Nome della cartella principale da utilizzare
     QStringList *mReceivedFiles;        // Elenco degli elementi da trasmettere
+    QString mTextToReceive;             // Testo ricevuto in caso di invio testo
+    bool mReceivingText;               // Ricezione di testo in corso
+    QString mPartialName;              // Nome prossimo file letto solo in parte
 
 };
 

@@ -2,6 +2,7 @@
 #define DIALOGSENDIP_H
 
 #include <QDialog>
+#include "dialogtext.h"
 
 namespace Ui {
     class DialogSendIp;
@@ -20,11 +21,14 @@ protected:
 
 private:
     Ui::DialogSendIp *ui;
+    DialogText *mDialogText;
 
 private slots:
+    void on_buttonSendText_clicked();
     void on_buttonSend_clicked();
     void on_lineEdit_textChanged(QString );
     void on_buttonBack_clicked();
+    void contextMenu_sendText(QString text);
 };
 
 #endif // DIALOGSENDIP_H

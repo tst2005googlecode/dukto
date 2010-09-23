@@ -35,6 +35,16 @@
     </widget>
    </item>
    <item>
+    <widget class="QPushButton" name="buttonSendText">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="text">
+      <string>Send text</string>
+     </property>
+    </widget>
+   </item>
+   <item>
     <widget class="QPushButton" name="buttonBack">
      <property name="text">
       <string>Back</string>
