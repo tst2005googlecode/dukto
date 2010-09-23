@@ -8,6 +8,7 @@
 
 #include "duktoprotocol.h"
 #include "dialogsendip.h"
+#include "dialogtext.h"
 
 QTM_USE_NAMESPACE
 
@@ -25,6 +26,7 @@ public:
     void setProtocolReference(DuktoProtocol *p);
     void startFileTransfer(QStringList files, QString dest);
     void startFileTransfer(QStringList files);
+    void startTextTransfer(QString text, QString dest);
     void initConnection();
 
 public slots:
@@ -38,9 +40,11 @@ public slots:
     void showCurrentIP();
     void changeFolder();
     void sendToIp();
-    // void initFinished();
     void connectOpened();
     void connectError(QNetworkSession::SessionError error);
+    void showSendTextDialog();
+    void contextMenu_sendText(QString text);
+    void receiveTextComplete(QString *text);
 
 protected:
     void changeEvent(QEvent *e);
@@ -51,10 +55,13 @@ private:
     QProgressDialog *mProgressDialog;
     QProgressDialog *mConnectingDialog;
     DialogSendIp *mDialogSendIp;
+    DialogText *mDialogText;
     QAction *mCurrentIPAction;
     QAction *mChangeFolderAction;
     QAction *mSendToIPAction;
+    QAction *mSendTextAction;
     QNetworkSession *mNetworkSession;
+
 
 
 private slots:

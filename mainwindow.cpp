@@ -11,7 +11,6 @@
 #include "listwidgetpeeritem.h"
 #include "peer.h"
 #include "buddywidget.h"
-#include "dialogsendip.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -20,6 +19,7 @@ MainWindow::MainWindow(QWidget *parent) :
     // Creazione finestra
     ui->setupUi(this);
     mDialogSendIp = NULL;
+    mDialogText = NULL;
     mNetworkSession = NULL;
 
     // Creazione menu'
@@ -32,6 +32,9 @@ MainWindow::MainWindow(QWidget *parent) :
     mSendToIPAction = new QAction("Send by IP", this);
     menuBar()->addAction(mSendToIPAction);
     connect(mSendToIPAction, SIGNAL(triggered()), this, SLOT(sendToIp()));
+    mSendTextAction = new QAction("Send text message", this);
+    menuBar()->addAction(mSendTextAction);
+    connect(mSendTextAction, SIGNAL(triggered()), this, SLOT(showSendTextDialog()));
 
     // Progress dialog per operazioni
     mProgressDialog = new QProgressDialog("", "", 0, 100);
@@ -60,6 +63,8 @@ MainWindow::~MainWindow()
     }
     if (mProgressDialog) delete mProgressDialog;
     if (mConnectingDialog) delete mConnectingDialog;
+    if (mDialogSendIp) delete mDialogSendIp;
+    if (mDialogText) delete mDialogText;
     if (ui) delete ui;
 }
 
@@ -90,6 +95,7 @@ void MainWindow::connectOpened()
     connect(mProtocol, SIGNAL(receiveFileComplete(QStringList*)), this, SLOT(receiveFileComplete(QStringList*)));
     connect(mProtocol, SIGNAL(receiveFileCancelled()), this, SLOT(receiveFileCancelled()));
     connect(mProtocol, SIGNAL(transferStatusUpdate(int)), this, SLOT(transferStatusUpdate(int)), Qt::DirectConnection);
+    connect(mProtocol, SIGNAL(receiveTextComplete(QString*)), this, SLOT(receiveTextComplete(QString*)));
     mProtocol->sayHello(QHostAddress::Broadcast);
 
     // Hide connecting dialog
@@ -100,8 +106,14 @@ void MainWindow::connectOpened()
 
 void MainWindow::connectError(QNetworkSession::SessionError error)
 {
+#if defined(Q_WS_S60)
     QMessageBox::critical(0, "Dukto", "Error: " + mNetworkSession->errorString());
     exit(-1);
+#else
+    mConnectingDialog->close();
+    delete mConnectingDialog;
+    mConnectingDialog = NULL;
+#endif
 }
 
 void MainWindow::changeEvent(QEvent *e)
@@ -168,10 +180,15 @@ void MainWindow::sendFileComplete(QStringList *files)
     if (files->count() == 1)
     {
         QFileInfo fi(files->at(0));
-        QMessageBox::information(this, "Send file", "File '" + fi.fileName() + "' sent.");
+        if (fi.fileName() == "___DUKTO___TEXT___") {
+            QMessageBox::information(this, "Send text", "Text message sent.");
+        }
+        else
+            QMessageBox::information(this, "Send file", "File '" + fi.fileName() + "' sent.");
     }
     else
         QMessageBox::information(this, "Send files", "Multiple files and folders sent.");
+
 }
 
 void MainWindow::receiveFileComplete(QStringList *files)
@@ -270,4 +287,50 @@ void MainWindow::sendToIp()
     if (mDialogSendIp) delete mDialogSendIp;
     mDialogSendIp = new DialogSendIp(this);
     mDialogSendIp->showMaximized();
+}
+
+void MainWindow::showSendTextDialog()
+{
+    if (mDialogText) delete mDialogText;
+    mDialogText = new DialogText(this);
+    connect(mDialogText, SIGNAL(sendText(QString)), this, SLOT(contextMenu_sendText(QString)));
+    mDialogText->showMaximized();
+}
+
+
+void MainWindow::contextMenu_sendText(QString text)
+{
+    // Recupero l'elemento selezionato
+    QString dest;
+    if (ui->listWidget->selectedItems().count() != 1) {
+        QMessageBox::critical(this, "Error", "No peer selected as target.");
+        return;
+    }
+    ListWidgetPeerItem *i = static_cast<ListWidgetPeerItem*>(ui->listWidget->selectedItems().at(0));
+    dest = i->getPeerKey();
+
+    // Invio dati
+    startTextTransfer(text, dest);
+}
+
+void MainWindow::startTextTransfer(QString text, QString dest)
+{
+    ui->listWidget->setEnabled(false);
+    mProgressDialog->show();
+    mProtocol->sendText(dest, text);
+}
+
+
+void MainWindow::receiveTextComplete(QString *text)
+{
+    ui->listWidget->setEnabled(true);
+    mProgressDialog->close();
+
+    if (mDialogText) {
+        mDialogText->close();
+        delete mDialogText;
+    }
+    mDialogText = new DialogText(this);
+    mDialogText->setReadOnlyText(*text);
+    mDialogText->showMaximized();
 }
