@@ -20,6 +20,7 @@
 
 #include <QHostInfo>
 #include <QSystemDeviceInfo>
+#include <QSettings>
 
 QTM_USE_NAMESPACE
 
@@ -47,13 +48,15 @@ QString OsLib::removeUrlPrefix(QString url)
 
 QString OsLib::retrieveSystemName()
 {
+#if defined(Q_WS_S60)
+    QString systemName = "";
+    QSystemDeviceInfo info;
+    QSettings settings("msec.it", "Dukto");
+    QString uname = settings.value("dukto/username", "User").toString();
+    systemName = uname + " at " + info.model() + " (" + PLATFORM + ")";
+#else
     static QString systemName = "";
     if (systemName != "") return systemName;
-
-#if defined(Q_WS_S60)
-    QSystemDeviceInfo info;
-    systemName = "User at " + info.model() + " (" + PLATFORM + ")";
-#else
     QString uname(getenv("USERNAME"));
     if (uname == "") uname = getenv("USER");
     if (uname == "") uname = "Unknown";

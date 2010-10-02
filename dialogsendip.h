@@ -22,6 +22,7 @@ protected:
 private:
     Ui::DialogSendIp *ui;
     DialogText *mDialogText;
+    QAction* mDismissAction;
 
 private slots:
     void on_buttonSendText_clicked();

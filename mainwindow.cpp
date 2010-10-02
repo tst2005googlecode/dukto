@@ -5,6 +5,9 @@
 #include <QNetworkInterface>
 #include <QAbstractSocket>
 #include <QNetworkConfigurationManager>
+#include <QInputDialog>
+#include <QSettings>
+#include <QTimer>
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
@@ -23,18 +26,29 @@ MainWindow::MainWindow(QWidget *parent) :
     mNetworkSession = NULL;
 
     // Creazione menu'
-    mCurrentIPAction = new QAction("Current IP address", this);
-    menuBar()->addAction(mCurrentIPAction);
-    connect(mCurrentIPAction, SIGNAL(triggered()), this, SLOT(showCurrentIP()));
-    mChangeFolderAction = new QAction("Change folder", this);
-    menuBar()->addAction(mChangeFolderAction);
-    connect(mChangeFolderAction, SIGNAL(triggered()), this, SLOT(changeFolder()));
-    mSendToIPAction = new QAction("Send by IP", this);
-    menuBar()->addAction(mSendToIPAction);
-    connect(mSendToIPAction, SIGNAL(triggered()), this, SLOT(sendToIp()));
+    mSendFileAction = new QAction("Send a file", this);
+    menuBar()->addAction(mSendFileAction);
+    connect(mSendFileAction, SIGNAL(triggered()), this, SLOT(selectFileToSend()));
+
     mSendTextAction = new QAction("Send text message", this);
     menuBar()->addAction(mSendTextAction);
     connect(mSendTextAction, SIGNAL(triggered()), this, SLOT(showSendTextDialog()));
+
+    mSendToIPAction = new QAction("Send by IP", this);
+    menuBar()->addAction(mSendToIPAction);
+    connect(mSendToIPAction, SIGNAL(triggered()), this, SLOT(sendToIp()));
+
+    mCurrentIPAction = new QAction("Current IP address", this);
+    menuBar()->addAction(mCurrentIPAction);
+    connect(mCurrentIPAction, SIGNAL(triggered()), this, SLOT(showCurrentIP()));
+
+    mChangeFolderAction = new QAction("Change folder", this);
+    menuBar()->addAction(mChangeFolderAction);
+    connect(mChangeFolderAction, SIGNAL(triggered()), this, SLOT(changeFolder()));
+
+    mChangeNameAction = new QAction("Change user name", this);
+    menuBar()->addAction(mChangeNameAction);
+    connect(mChangeNameAction, SIGNAL(triggered()), this, SLOT(changeName()));
 
     // Progress dialog per operazioni
     mProgressDialog = new QProgressDialog("", "", 0, 100);
@@ -49,9 +63,17 @@ MainWindow::MainWindow(QWidget *parent) :
 
     // Percorso di default
     QDir d;
-    d.mkpath("E:\\Dukto\\");
-    QDir::setCurrent("E:\\Dukto\\");
-    ui->labelDest->setText("Folder: E:\\Dukto");
+    if (d.mkpath("E:\\Dukto\\"))
+    {
+        QDir::setCurrent("E:\\Dukto\\");
+        ui->labelDest->setText("Folder: E:\\Dukto");
+    }
+    else
+    {
+        d.mkpath("C:\\Dukto\\");
+        QDir::setCurrent("C:\\Dukto\\");
+        ui->labelDest->setText("Folder: C:\\Dukto");
+    }
 
 }
 
@@ -223,6 +245,15 @@ void MainWindow::transferStatusUpdate(int p)
 
 void MainWindow::on_listWidget_itemDoubleClicked(QListWidgetItem* item)
 {
+    selectFileToSend();
+}
+
+void MainWindow::selectFileToSend()
+{
+    if (ui->listWidget->selectedItems().count() != 1) {
+        QMessageBox::critical(this, "Error", "No peer selected as target.");
+        return;
+    }
     QStringList files = QFileDialog::getOpenFileNames(this, "Select file to send", "", "Any file (*.*)");
     if (files.count() == 0) return;
     startFileTransfer(files);
@@ -291,15 +322,6 @@ void MainWindow::sendToIp()
 
 void MainWindow::showSendTextDialog()
 {
-    if (mDialogText) delete mDialogText;
-    mDialogText = new DialogText(this);
-    connect(mDialogText, SIGNAL(sendText(QString)), this, SLOT(contextMenu_sendText(QString)));
-    mDialogText->showMaximized();
-}
-
-
-void MainWindow::contextMenu_sendText(QString text)
-{
     // Recupero l'elemento selezionato
     QString dest;
     if (ui->listWidget->selectedItems().count() != 1) {
@@ -309,6 +331,17 @@ void MainWindow::contextMenu_sendText(QString text)
     ListWidgetPeerItem *i = static_cast<ListWidgetPeerItem*>(ui->listWidget->selectedItems().at(0));
     dest = i->getPeerKey();
 
+    // Mostro il dialog per il testo
+    if (mDialogText) delete mDialogText;
+    mDialogText = new DialogText(this);
+    mDialogText->setDest(dest);
+    connect(mDialogText, SIGNAL(sendText(QString, QString)), this, SLOT(contextMenu_sendText(QString, QString)));
+    mDialogText->showMaximized();
+}
+
+
+void MainWindow::contextMenu_sendText(QString text, QString dest)
+{
     // Invio dati
     startTextTransfer(text, dest);
 }
@@ -333,4 +366,25 @@ void MainWindow::receiveTextComplete(QString *text)
     mDialogText = new DialogText(this);
     mDialogText->setReadOnlyText(*text);
     mDialogText->showMaximized();
+}
+
+void MainWindow::changeName()
+{
+    QSettings settings("msec.it", "Dukto");
+    QString current = settings.value("dukto/username", "User").toString();
+
+    bool ok;
+    QString name = QInputDialog::getText(this, "Change user name",
+                          "New name:", QLineEdit::Normal, current, &ok);
+    if (ok && !name.isEmpty())
+    {
+        settings.setValue("dukto/username", name);
+        mProtocol->sayGoodbye();
+        QTimer::singleShot(200, this, SLOT(sayHelloAgain()));
+    }
+}
+
+void MainWindow::sayHelloAgain()
+{
+    mProtocol->sayHello(QHostAddress::Broadcast);
 }

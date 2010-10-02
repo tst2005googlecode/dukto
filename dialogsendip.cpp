@@ -10,6 +10,11 @@ DialogSendIp::DialogSendIp(QWidget *parent) :
     mDialogText(NULL)
 {
     ui->setupUi(this);
+
+    mDismissAction = new QAction("Dismiss", this);
+    mDismissAction->setSoftKeyRole(QAction::NegativeSoftKey);
+    connect(mDismissAction, SIGNAL(triggered()), this, SLOT(on_buttonBack_clicked()));
+    this->addAction(mDismissAction);
 }
 
 DialogSendIp::~DialogSendIp()
@@ -45,7 +50,6 @@ void DialogSendIp::on_buttonSend_clicked()
 {
     QStringList files = QFileDialog::getOpenFileNames(this, "Select file to send", "", "Any file (*.*)");
     if (files.count() == 0) return;
-    // this->close();
     ((MainWindow*)this->parent())->startFileTransfer(files, ui->lineEdit->text());
 }
 
