@@ -45,13 +45,6 @@
     </widget>
    </item>
    <item>
-    <widget class="QPushButton" name="buttonBack">
-     <property name="text">
-      <string>Back</string>
-     </property>
-    </widget>
-   </item>
-   <item>
     <spacer name="verticalSpacer">
      <property name="orientation">
       <enum>Qt::Vertical</enum>

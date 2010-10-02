@@ -43,8 +43,11 @@ public slots:
     void connectOpened();
     void connectError(QNetworkSession::SessionError error);
     void showSendTextDialog();
-    void contextMenu_sendText(QString text);
+    void contextMenu_sendText(QString text, QString dest);
     void receiveTextComplete(QString *text);
+    void selectFileToSend();
+    void changeName();
+    void sayHelloAgain();
 
 protected:
     void changeEvent(QEvent *e);
@@ -60,6 +63,8 @@ private:
     QAction *mChangeFolderAction;
     QAction *mSendToIPAction;
     QAction *mSendTextAction;
+    QAction *mSendFileAction;
+    QAction *mChangeNameAction;
     QNetworkSession *mNetworkSession;
 
 

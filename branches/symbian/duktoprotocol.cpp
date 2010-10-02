@@ -639,7 +639,10 @@ void DuktoProtocol::sendToAllBroadcast(QByteArray *packet)
         // Invio pacchetto per ogni IP di broadcast
         for (int j = 0; j < addrs.size(); j++)
             if ((addrs[j].ip().protocol() == QAbstractSocket::IPv4Protocol) && (addrs[j].broadcast().toString() != ""))
+            {
                 mSocket->writeDatagram(packet->data(), packet->length(), addrs[j].broadcast(), UDP_PORT);
+                mSocket->flush();
+            }
 
     }
 
