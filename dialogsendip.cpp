@@ -57,11 +57,12 @@ void DialogSendIp::on_buttonSendText_clicked()
 {
     if (mDialogText) delete mDialogText;
     mDialogText = new DialogText(this);
-    connect(mDialogText, SIGNAL(sendText(QString)), this, SLOT(contextMenu_sendText(QString)));
+    mDialogText->setDest(ui->lineEdit->text());
+    connect(mDialogText, SIGNAL(sendText(QString, QString)), this, SLOT(contextMenu_sendText(QString, QString)));
     mDialogText->showMaximized();
 }
 
-void DialogSendIp::contextMenu_sendText(QString text)
+void DialogSendIp::contextMenu_sendText(QString text, QString dest)
 {
-    ((MainWindow*)this->parent())->startTextTransfer(text, ui->lineEdit->text());
+    ((MainWindow*)this->parent())->startTextTransfer(text, dest);
 }

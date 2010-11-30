@@ -23,6 +23,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
     mDialogSendIp = NULL;
     mDialogText = NULL;
+    mDialogAbout = NULL;
     mNetworkSession = NULL;
 
     // Creazione menu'
@@ -50,6 +51,10 @@ MainWindow::MainWindow(QWidget *parent) :
     menuBar()->addAction(mChangeNameAction);
     connect(mChangeNameAction, SIGNAL(triggered()), this, SLOT(changeName()));
 
+    mAboutAction = new QAction("About Dukto", this);
+    menuBar()->addAction(mAboutAction);
+    connect(mAboutAction, SIGNAL(triggered()), this, SLOT(showAbout()));
+
     // Progress dialog per operazioni
     mProgressDialog = new QProgressDialog("", "", 0, 100);
     mProgressDialog->setWindowModality(Qt::WindowModal);
@@ -61,19 +66,28 @@ MainWindow::MainWindow(QWidget *parent) :
     mConnectingDialog->setMinimumDuration(0);
     mConnectingDialog->setWindowModality(Qt::WindowModal);
 
-    // Percorso di default
+    // Percorso salvato
+    QSettings settings("msec.it", "Dukto");
+    QString path = settings.value("dukto/currentpath", "C:/Dukto").toString();
     QDir d;
-    if (d.mkpath("E:\\Dukto\\"))
+    if (d.mkpath(path))
     {
-        QDir::setCurrent("E:\\Dukto\\");
-        ui->labelDest->setText("Folder: E:\\Dukto");
+        QDir::setCurrent(path);
+        ui->labelDest->setText("Folder: " + path.replace('/', "\\"));
     }
+
+    // Percorso di default
     else
     {
-        d.mkpath("C:\\Dukto\\");
-        QDir::setCurrent("C:\\Dukto\\");
-        ui->labelDest->setText("Folder: C:\\Dukto");
+        path = "C:/Dukto";
+        d.mkpath(path);
+        QDir::setCurrent(path);
+        ui->labelDest->setText("Folder: " + path.replace('/', "\\"));
+        settings.setValue("dukto/currentpath", path);
     }
+
+    // Inizialmente nascondo la lista
+    ui->listWidget->setVisible(false);
 
 }
 
@@ -87,6 +101,7 @@ MainWindow::~MainWindow()
     if (mConnectingDialog) delete mConnectingDialog;
     if (mDialogSendIp) delete mDialogSendIp;
     if (mDialogText) delete mDialogText;
+    if (mDialogAbout) delete mDialogAbout;
     if (ui) delete ui;
 }
 
@@ -118,12 +133,15 @@ void MainWindow::connectOpened()
     connect(mProtocol, SIGNAL(receiveFileCancelled()), this, SLOT(receiveFileCancelled()));
     connect(mProtocol, SIGNAL(transferStatusUpdate(int)), this, SLOT(transferStatusUpdate(int)), Qt::DirectConnection);
     connect(mProtocol, SIGNAL(receiveTextComplete(QString*)), this, SLOT(receiveTextComplete(QString*)));
-    mProtocol->sayHello(QHostAddress::Broadcast);
+    // mProtocol->sayHello(QHostAddress::Broadcast);
 
     // Hide connecting dialog
     mConnectingDialog->close();
     delete mConnectingDialog;
     mConnectingDialog = NULL;
+
+    // Timer per l'invio dell'hello (a volte non viene inviato se lo invio subito)
+    QTimer::singleShot(200, this, SLOT(sayHelloAgain()));
 }
 
 void MainWindow::connectError(QNetworkSession::SessionError error)
@@ -186,6 +204,18 @@ void MainWindow::refreshPeerList()
     // Selezione primo elemento
     if ((ui->listWidget->count() > 0) && (ui->listWidget->selectedItems().count() == 0))
         ui->listWidget->setCurrentRow(0);
+
+    // Se non ci sono elementi mostro il testo con le istruzioni
+    if (ui->listWidget->count() == 0)
+    {
+        ui->labelNobody->setVisible(true);
+        ui->listWidget->setVisible(false);
+    }
+    else
+    {
+        ui->labelNobody->setVisible(false);
+        ui->listWidget->setVisible(true);
+    }
 }
 
 void MainWindow::receiveFileStart()
@@ -311,6 +341,8 @@ void MainWindow::changeFolder()
     if (dirname == "") return;
     QDir::setCurrent(dirname);
     ui->labelDest->setText("Folder: " + QDir::currentPath().replace('/', "\\"));
+    QSettings settings("msec.it", "Dukto");
+    settings.setValue("dukto/currentpath", dirname);
 }
 
 void MainWindow::sendToIp()
@@ -387,4 +419,12 @@ void MainWindow::changeName()
 void MainWindow::sayHelloAgain()
 {
     mProtocol->sayHello(QHostAddress::Broadcast);
+}
+
+void MainWindow::showAbout()
+{
+    // Mostro il dialog
+    if (mDialogAbout) delete mDialogAbout;
+    mDialogAbout = new AboutDialog(this);
+    mDialogAbout->showMaximized();
 }
