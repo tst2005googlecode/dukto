@@ -29,7 +29,7 @@ private slots:
     void on_buttonSend_clicked();
     void on_lineEdit_textChanged(QString );
     void on_buttonBack_clicked();
-    void contextMenu_sendText(QString text);
+    void contextMenu_sendText(QString text, QString dest);
 };
 
 #endif // DIALOGSENDIP_H

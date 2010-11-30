@@ -9,6 +9,7 @@
 #include "duktoprotocol.h"
 #include "dialogsendip.h"
 #include "dialogtext.h"
+#include "aboutdialog.h"
 
 QTM_USE_NAMESPACE
 
@@ -48,6 +49,8 @@ public slots:
     void selectFileToSend();
     void changeName();
     void sayHelloAgain();
+    void showAbout();
+
 
 protected:
     void changeEvent(QEvent *e);
@@ -59,15 +62,15 @@ private:
     QProgressDialog *mConnectingDialog;
     DialogSendIp *mDialogSendIp;
     DialogText *mDialogText;
+    AboutDialog *mDialogAbout;
     QAction *mCurrentIPAction;
     QAction *mChangeFolderAction;
     QAction *mSendToIPAction;
     QAction *mSendTextAction;
     QAction *mSendFileAction;
     QAction *mChangeNameAction;
+    QAction *mAboutAction;
     QNetworkSession *mNetworkSession;
-
-
 
 private slots:
     void on_listWidget_itemDoubleClicked(QListWidgetItem* item);

@@ -20,7 +20,8 @@ SOURCES += \
     dialogsendip.cpp \
     buddywidget.cpp \
     dialogtext.cpp \
-    symbiannative.cpp
+    symbiannative.cpp \
+    aboutdialog.cpp
 
 HEADERS  += \
     peer.h \
@@ -31,18 +32,20 @@ HEADERS  += \
     dialogsendip.h \
     buddywidget.h \
     dialogtext.h \
-    symbiannative.h
+    symbiannative.h \
+    aboutdialog.h
 
 FORMS    += \
     mainwindow.ui \
     dialogsendip.ui \
     buddywidget.ui \
-    dialogtext.ui
+    dialogtext.ui \
+    aboutdialog.ui
 
 CONFIG += mobility
 MOBILITY = systeminfo bearer
 
-ICON = icons/tinyicon.svg
+ICON = icons/icon.svg
 
 symbian {
     TARGET.UID3 = 0xec2c0684
@@ -54,3 +57,5 @@ symbian {
 
 RESOURCES += \
     resources.qrc
+
+VERSION = 3.0.0
