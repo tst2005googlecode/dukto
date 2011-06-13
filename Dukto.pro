@@ -9,6 +9,10 @@ QT       += core gui network
 TARGET = Dukto
 TEMPLATE = app
 
+CONFIG += static
+
+LIBS += libole32
+
 SOURCES += \ 
     peer.cpp \
     oslib.cpp \
@@ -35,24 +39,12 @@ FORMS    += \
     textdialog.ui
 
 RESOURCES += \
-    resources.qrc
+    D:/Home/Progetti/Dukto/SVN/trunk/src/resources.qrc
 
 RC_FILE = dukto.rc
 
 win32 {
-	QMAKE_LFLAGS += -static-libgcc
-	LIBS += libole32 libWs2_32
-	CONFIG += static
-}
-
-unix {
-	LIBS = -L/usr/lib/ -lpcre -lexpat -lxcb -lXau -lXdmcp
-	CONFIG += static
-}
-
-macx {
-	LIBS = -framework CoreFoundation
-	ICON = ../res/icon/macosx.icns
+QMAKE_LFLAGS += -static-libgcc
 }
 
 include(3rd/qtsingleapplication/qtsingleapplication.pri)

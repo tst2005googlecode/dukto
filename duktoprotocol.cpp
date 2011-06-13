@@ -23,7 +23,6 @@
 #include <QFileInfo>
 #include <QDir>
 #include <QNetworkInterface>
-#include <QTimer>
 
 #define UDP_PORT 4644
 #define TCP_PORT 4644
@@ -152,7 +151,7 @@ void DuktoProtocol::newIncomingConnection()
 
     // Registrazione gestori eventi socket
     connect(mCurrentSocket, SIGNAL(readyRead()), this, SLOT(readNewData()), Qt::DirectConnection);
-    connect(mCurrentSocket, SIGNAL(disconnected()), this, SLOT(closedConnectionTmp()), Qt::QueuedConnection);
+    connect(mCurrentSocket, SIGNAL(disconnected()), this, SLOT(closedConnection()), Qt::QueuedConnection);
 
     // Inizializzazione variabili
     mIsReceiving = true;
@@ -161,7 +160,6 @@ void DuktoProtocol::newIncomingConnection()
     mReceivedFiles = new QStringList();
     mRootFolderName = "";
     mRootFolderRenamed = "";
-    mReceivingText = false;
 
     // -- Lettura header generale --
     // Numero entità da ricevere
@@ -197,6 +195,7 @@ void DuktoProtocol::readNewData()
                 mPartialName.append(c);
             }
             QString name = QString::fromUtf8(mPartialName);
+            mReceivedFiles->append(name);
             mPartialName.clear();
 
             // Lettura dimensioni
@@ -220,7 +219,6 @@ void DuktoProtocol::readNewData()
                         name = originalName + " (" + QString::number(i++) + ")";
                     mRootFolderName = originalName;
                     mRootFolderRenamed = name;
-                    mReceivedFiles->append(name);
 
                 }
 
@@ -237,7 +235,6 @@ void DuktoProtocol::readNewData()
             // Potrebbe essere un invio di testo
             else if (name == "___DUKTO___TEXT___")
             {
-                mReceivedFiles->append(name);
                 mReceivingText = true;
                 mTextToReceive.clear();
                 mCurrentFile = NULL;
@@ -258,7 +255,6 @@ void DuktoProtocol::readNewData()
                     name = fi.baseName() + " (" + QString::number(i) + ")." + fi.completeSuffix();
                     i++;
                 }
-                mReceivedFiles->append(name);
                 mCurrentFile = new QFile(name);
                 mCurrentFile->open(QIODevice::WriteOnly);
                 mReceivingText = false;
@@ -297,11 +293,6 @@ void DuktoProtocol::readNewData()
 
     // Riabilitazione segnale
     connect(mCurrentSocket, SIGNAL(readyRead()), this, SLOT(readNewData()), Qt::DirectConnection);
-}
-
-void DuktoProtocol::closedConnectionTmp()
-{
-    QTimer::singleShot(100, this, SLOT(closedConnection()));
 }
 
 // Chiusura della connessione TCP in ricezione
@@ -364,13 +355,9 @@ void DuktoProtocol::sendFile(QString ipDest, QStringList files)
 
     // Connessione al destinatario
     mCurrentSocket = new QTcpSocket(this);
-
-    // Gestione segnali
     connect(mCurrentSocket, SIGNAL(connected()), this, SLOT(sendMetaData()), Qt::DirectConnection);
     connect(mCurrentSocket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(sendConnectError(QAbstractSocket::SocketError)), Qt::DirectConnection);
     connect(mCurrentSocket, SIGNAL(bytesWritten(qint64)), this, SLOT(sendData(qint64)), Qt::DirectConnection);
-
-    // Connessione
     mCurrentSocket->connectToHost(ipDest, TCP_PORT);
 }
 
@@ -396,12 +383,6 @@ void DuktoProtocol::sendText(QString ipDest, QString text)
 
 void DuktoProtocol::sendMetaData()
 {
-    // Impostazione buffer di invio
-#ifdef Q_WS_WIN
-    int v = 49152;
-    ::setsockopt(mCurrentSocket->socketDescriptor(), SOL_SOCKET, SO_SNDBUF, (char*)&v, sizeof(v));
-#endif
-
     // Header
     //  - N. entità (file, cartelle, ecc...)
     //  - Dimensione totale

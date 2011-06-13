@@ -49,7 +49,6 @@ public slots:
     void newIncomingConnection();
     void readNewData();
     void closedConnection();
-    void closedConnectionTmp();
     void sendMetaData();
     void sendData(qint64 b);
     void sendConnectError(QAbstractSocket::SocketError);

@@ -22,18 +22,11 @@
 #include <QString>
 
 #if defined(Q_WS_WIN)
-#define PLATFORM "Windows"
-#elif defined(Q_WS_MAC)
-#define PLATFORM "Macintosh"
+#include <windows.h>
 #elif defined(Q_WS_X11)
-#define PLATFORM "Linux"
+#include <stdlib.h>
 #endif
 
-#if defined(Q_WS_WIN)
-#include <windows.h>
-/*#elif defined(Q_WS_X11)
-#include <stdlib.h>*/
-#endif
 class OsLib
 {
 public:
@@ -46,7 +39,7 @@ public:
         #endif
         return path;
     }
-/*
+
     static inline void openFile(QString path) {
     #if defined(Q_WS_WIN)
         ::ShellExecute(NULL, NULL, path.toStdWString().c_str(), NULL, NULL, SW_SHOWNORMAL);
@@ -66,7 +59,7 @@ public:
         system(("open \"" + path + "\"").toStdString().c_str());
     #endif
     }
-*/
+
 private:
     OsLib() { }
 
