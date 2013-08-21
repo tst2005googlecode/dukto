@@ -44,7 +44,7 @@ void BuddyListItemModel::addMeElement()
 {
     addBuddy("",
              0,
-             Platform::getSystemUsername() + " (You)",
+             Platform::getSystemUsername() + tr(" (You)"),
              Platform::getHostname(),
              Platform::getPlatformName(),
              QUrl::fromLocalFile(Platform::getAvatarPath()));
@@ -54,8 +54,8 @@ void BuddyListItemModel::addIpElement()
 {
     addBuddy("IP",
              0,
-             "IP connection",
-             "Send data to a remote device",
+             tr("IP connection"),
+             tr("Send data to a remote device"),
              "IP",
              QUrl(""));
 }
@@ -79,7 +79,7 @@ void BuddyListItemModel::addBuddy(QString ip, qint16 port, QString username, QSt
     // Set (or update) data
     it->setData(username, BuddyListItemModel::Username);
     if (ip != "IP")
-        it->setData("at " + system, BuddyListItemModel::System);
+        it->setData(tr("at ") + system, BuddyListItemModel::System);
     else
         it->setData(system, BuddyListItemModel::System);
     it->setData(platform, BuddyListItemModel::Platform);
@@ -182,5 +182,5 @@ QString BuddyListItemModel::fistBuddyIp()
 
 void BuddyListItemModel::updateMeElement()
 {
-    mMeItem->setData(Platform::getSystemUsername(), BuddyListItemModel::Username);
+    mMeItem->setData(Platform::getSystemUsername() + tr(" (You)"), BuddyListItemModel::Username);
 }

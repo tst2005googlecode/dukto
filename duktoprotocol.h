@@ -84,40 +84,40 @@ private:
     void handleMessage(QByteArray &data, QHostAddress &sender);
     void updateStatus();
 
-    QUdpSocket *mSocket;            // Socket UDP segnalazione
-    QTcpServer *mTcpServer;         // Socket TCP attesa dati
-    QTcpSocket *mCurrentSocket;     // Socket TCP dell'attuale trasferimento file
+    QUdpSocket *mSocket;            // UDP Socket signaling
+    QTcpServer *mTcpServer;         // TCP socket waiting for data
+    QTcpSocket *mCurrentSocket;     // TCP socket of the file transfer
 
-    QHash<QString, Peer> mPeers;    // Elenco peer individuati
+    QHash<QString, Peer> mPeers;    // List peer identified
 
     // Send and receive members
     qint16 mLocalUdpPort;
     qint16 mLocalTcpPort;
     bool mIsSending;
     bool mIsReceiving;
-    QFile *mCurrentFile;            // Puntatore al file aperto corrente
-    qint64 mTotalSize;              // Quantità totale di dati da inviare o ricevere
-    int mFileCounter;              // Puntatore all'elemento correntemente da trasmettere o ricevere
+    QFile *mCurrentFile;            // Current open file pointer
+    qint64 mTotalSize;              // Total amount of data to send or receive
+    int mFileCounter;               // Pointer to currently be transmitted or received
 
     // Sending members
-    QStringList *mFilesToSend;      // Elenco degli elementi da trasmettere
-    qint64 mSentData;               // Quantità di dati totale trasmessi
-    qint64 mSentBuffer;             // Quantità di dati rimanenti nel buffer di trasmissione
-    QString mBasePath;              // Percorso base per l'invio di file e cartelle
-    QString mTextToSend;            // Testo da inviare (in caso di invio testuale)
-    bool mSendingScreen;            // Flag che indica se si sta inviando uno screenshot
+    QStringList *mFilesToSend;      // List of elements to be transmitted
+    qint64 mSentData;               // Total amount of data transmitted
+    qint64 mSentBuffer;             // Amount of data remaining in the transmission buffer
+    QString mBasePath;              // Base path for sending files and folders
+    QString mTextToSend;            // Text to be sent (in the case of sending text)
+    bool mSendingScreen;            // Flag that indicates whether you are sending a screenshot
 
     // Receive members
-    qint64 mElementsToReceiveCount;    // Numero di elementi da ricevere
-    qint64 mTotalReceivedData;         // Quantità di dati ricevuti totale
-    qint64 mElementReceivedData;       // Quantità di dati ricevuti per l'elemento corrente
-    qint64 mElementSize;               // Dimensione dell'elemento corrente
-    QString mRootFolderName;           // Nome della cartella principale ricevuta
-    QString mRootFolderRenamed;        // Nome della cartella principale da utilizzare
-    QStringList *mReceivedFiles;        // Elenco degli elementi da trasmettere
-    QByteArray mTextToReceive;             // Testo ricevuto in caso di invio testo
-    bool mReceivingText;               // Ricezione di testo in corso
-    QByteArray mPartialName;              // Nome prossimo file letto solo in parte
+    qint64 mElementsToReceiveCount;    // Number of elements to receive
+    qint64 mTotalReceivedData;         // Total amount of data received
+    qint64 mElementReceivedData;       // Amount of data received for the current element
+    qint64 mElementSize;               // Size of the current
+    QString mRootFolderName;           // Name of the parent folder received
+    QString mRootFolderRenamed;        // The name of the root folder to use
+    QStringList *mReceivedFiles;       // List of elements to be transmitted
+    QByteArray mTextToReceive;         // Received text when sending text
+    bool mReceivingText;               // Receiving text in progress
+    QByteArray mPartialName;           // Name next file read only in part
     enum RecvStatus {
         FILENAME,
         FILESIZE,

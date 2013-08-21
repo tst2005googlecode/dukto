@@ -1,26 +1,8 @@
-/* DUKTO - A simple, fast and multi-platform file transfer tool for LAN users
- * Copyright (C) 2011 Emanuele Colombo
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
- */
-
 #include <QtGui/QApplication>
 #include "qmlapplicationviewer.h"
-
-#include "guibehind.h"
-#include "duktowindow.h"
+#include "controller.h"
+#include <QLocale>
+#include <QTranslator>
 
 #if defined(Q_WS_S60)
 #define SYMBIAN
@@ -30,42 +12,37 @@
 #define SYMBIAN
 #endif
 
-#ifndef SYMBIAN
-#include "qtsingleapplication.h"
-#endif
-
-int main(int argc, char *argv[])
+Q_DECL_EXPORT int main(int argc, char *argv[])
 {
-#if defined(Q_WS_X11)
-    QApplication::setGraphicsSystem("raster");
-#elif defined (Q_WS_WIN)
-    qputenv("QML_ENABLE_TEXT_IMAGE_CACHE", "true");
+    QScopedPointer<QApplication> app(createApplication(argc, argv));
+    app->setOrganizationName("Vietsoft");
+    app->setOrganizationDomain("tianpham.blogspot.com");
+    app->setApplicationName("Tian Media Transfer");    // add app ver to app
+#if defined(Q_OS_SYMBIAN)
+    app->setApplicationVersion(APP_VERSION);
+#else
+    app->setApplicationVersion("1");
 #endif
 
-#if defined(SYMBIAN)
-    QApplication app(argc, argv);
-#else
-    // Check for single running instance    
-    QtSingleApplication app(argc, argv);
-    if (app.isRunning()) {
-        app.sendMessage("FOREGROUND");
-        return 0;
+    // Get locale of the system
+    QString location = QLocale::system().name();
+    // Load the correct translation file (if available)
+    QTranslator translator;
+    if(location.contains("vi")) {
+        translator.load("lang_vi", ":/languages");
+        // Adds the loaded file to list of active translation files
+        app->installTranslator(&translator);
     }
-#endif
 
-    DuktoWindow viewer;
-#ifndef SYMBIAN
-    app.setActivationWindow(&viewer, true);
-#endif
-    GuiBehind gb(&viewer);
-
-#ifndef Q_WS_S60
+    QmlApplicationViewer viewer;
+    viewer.setOrientation(QmlApplicationViewer::ScreenOrientationLockPortrait);
+    viewer.setMainQmlFile(QLatin1String("qml/TianMediTrans/main.qml"));
     viewer.showExpanded();
-    app.installEventFilter(&gb);
-#else
-    viewer.showFullScreen();
-    gb.initConnection();
+
+    Controller controller(&viewer);
+#ifdef Q_WS_S60
+    controller.initConnection();
 #endif
 
-    return app.exec();
+    return app->exec();
 }

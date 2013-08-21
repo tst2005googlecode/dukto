@@ -29,12 +29,6 @@ public:
     explicit Settings(QObject *parent = 0);
     QString currentPath();
     void savePath(QString path);
-    void saveWindowGeometry(QByteArray geo);
-    QByteArray windowGeometry();
-    void saveThemeColor(QString color);
-    QString themeColor();
-    void saveShowTermsOnStart(bool show);
-    bool showTermsOnStart();
     QString buddyName();
     void saveBuddyName(QString name);
 

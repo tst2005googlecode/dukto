@@ -23,6 +23,7 @@
 #include <QFile>
 #include <QDir>
 #include <QMessageBox>
+#include "settings.h"
 
 #if defined(Q_WS_MAC)
 #include <QTemporaryFile>
